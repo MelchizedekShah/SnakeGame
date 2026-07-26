@@ -203,6 +203,8 @@ main :: proc() {
 	rl.UnloadTexture(snake_body_sprite)
 	rl.UnloadTexture(snake_tail_sprite)
 	rl.UnloadTexture(food_sprite)
+	rl.UnloadSound(eat_sound)
+	rl.UnloadSound(crash_sound)
 
 	rl.CloseAudioDevice()
 	rl.CloseWindow()
