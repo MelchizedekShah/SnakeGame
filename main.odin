@@ -4,7 +4,7 @@ import "core:fmt"
 import "core:math"
 import rl "vendor:raylib"
 
-WINDOWS_SIZE :: 1000
+WINDOWS_SIZE :: 900
 GRID_WIDTH :: 20
 CELL_SIZE :: 16
 CANVAS_SIZE :: GRID_WIDTH * CELL_SIZE
@@ -62,6 +62,7 @@ main :: proc() {
 
 	restart()
 
+	high_score := 0
 	food_sprite := rl.LoadTexture("food.png")
 	snake_head_sprite := rl.LoadTexture("snake_head.png")
 	snake_tail_sprite := rl.LoadTexture("snake_tail.png")
@@ -180,7 +181,13 @@ main :: proc() {
 			score := snake_length - 3
 			score_str := fmt.ctprintf("Score: %v", score)
 
-			rl.DrawText(score_str, 4, CANVAS_SIZE - 14, 10, rl.GRAY)
+			if score > high_score {
+				high_score = score
+			}
+			high_score_str := fmt.ctprintf("High score: %v", high_score)
+
+			rl.DrawText(score_str, 5, CANVAS_SIZE - 14, 10, rl.GRAY)
+			rl.DrawText(high_score_str, 55, CANVAS_SIZE - 14, 10, rl.GRAY)
 		}
 		if game_over {
 			rl.DrawText("Game Over!", 4, 4, 25, rl.RED)
