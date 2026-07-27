@@ -10,6 +10,7 @@ GAME_BACKROUND: rl.Color = {45, 52, 70, 255}
 TICK_RATE :: 0.13
 Vec2i :: [2]int
 MAX_SNAKE_LENGTH :: GRID_WIDTH * GRID_WIDTH
+MIN_SNAKE_LENGTH :: 3
 gm: GameModes
 
 Snake :: struct {
@@ -32,23 +33,26 @@ Direction :: struct {
 	tick_timer:   f32,
 }
 
-Assets :: struct {
-	using sound:   Sound,
-	using texture: Texture,
+Single_Assets :: struct {
+	food1_sprite: rl.Texture,
+	head1_sprite: rl.Texture,
+	tail1_sprite: rl.Texture,
+	body1_sprite: rl.Texture,
+	// Sound
+	crash:        rl.Sound,
+	eat:          rl.Sound,
 }
 
-Sound :: struct {
-	crash: rl.Sound,
-	eat:   rl.Sound,
+Double_Assets :: struct {
+	using single: Single_Assets,
+	head2_sprite: rl.Texture,
+	body2_sprite: rl.Texture,
+	tail2_sprite: rl.Texture,
+	food2_sprite: rl.Texture,
+	// Sound
+	grow:         rl.Sound,
+	shrink:       rl.Sound,
 }
-
-Texture :: struct {
-	food_sprite: rl.Texture,
-	head_sprite: rl.Texture,
-	tail_sprite: rl.Texture,
-	body_sprite: rl.Texture,
-}
-
 
 GameModes :: enum {
 	Menu,

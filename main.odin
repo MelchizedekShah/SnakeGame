@@ -13,7 +13,7 @@ main :: proc() {
 		case .SinglePlayer:
 			run_single_player()
 		case .DoublePlayer:
-		// run_double_player()
+			run_double_player()
 		}
 	}
 

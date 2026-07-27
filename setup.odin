@@ -22,23 +22,43 @@ menu_picker :: proc() {
 }
 
 
-init :: proc() -> Assets {
+init :: proc() {
 	rl.SetConfigFlags({.VSYNC_HINT})
 	rl.InitWindow(WINDOWS_SIZE, WINDOWS_SIZE, "Snake")
 	rl.InitAudioDevice()
-	assets: Assets
-	return assets
 }
 
-cleanup :: proc(assets: Assets) {
-	rl.UnloadTexture(assets.head_sprite)
-	rl.UnloadTexture(assets.body_sprite)
-	rl.UnloadTexture(assets.tail_sprite)
-	rl.UnloadTexture(assets.food_sprite)
+cleanup_1 :: proc(assets: Single_Assets) {
+	rl.UnloadTexture(assets.head1_sprite)
+	rl.UnloadTexture(assets.body1_sprite)
+	rl.UnloadTexture(assets.tail1_sprite)
+	rl.UnloadTexture(assets.food1_sprite)
+
+	// Sounds
 	rl.UnloadSound(assets.eat)
 	rl.UnloadSound(assets.crash)
-
 }
+
+cleanup_2 :: proc(assets: Double_Assets) {
+	// snake 2
+	rl.UnloadTexture(assets.head2_sprite)
+	rl.UnloadTexture(assets.body2_sprite)
+	rl.UnloadTexture(assets.tail2_sprite)
+	rl.UnloadTexture(assets.food2_sprite)
+
+	// From single
+	rl.UnloadTexture(assets.head1_sprite)
+	rl.UnloadTexture(assets.body1_sprite)
+	rl.UnloadTexture(assets.tail1_sprite)
+	rl.UnloadTexture(assets.food1_sprite)
+
+	// Sounds
+	rl.UnloadSound(assets.eat)
+	rl.UnloadSound(assets.crash)
+	rl.UnloadSound(assets.grow)
+	rl.UnloadSound(assets.shrink)
+}
+
 
 close_game :: proc() {
 	rl.CloseAudioDevice()

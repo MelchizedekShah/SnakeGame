@@ -22,22 +22,28 @@ write_text :: proc(
 	rl.DrawText(message2, (WINDOWS_SIZE - option2_width) / 2, 600, message_size, rl.LIGHTGRAY)
 }
 
-draw_snake :: proc(snake: Snake, assets: Assets) {
+draw_snake :: proc(
+	snake: Snake,
+	head: rl.Texture,
+	body: rl.Texture,
+	tail: rl.Texture,
+	objective: rl.Texture,
+) {
 	rl.DrawTextureV(
-		assets.food_sprite,
+		objective,
 		{f32(snake.food.x) * CELL_SIZE, f32(snake.food.y) * CELL_SIZE},
 		rl.WHITE,
 	)
 
 	for i in 0 ..< snake.length {
-		part_sprite := assets.body_sprite
+		part_sprite := body
 		dir: Vec2i
 
 		if i == 0 {
-			part_sprite = assets.head_sprite
+			part_sprite = head
 			dir = snake.body[i] - snake.body[i + 1]
 		} else if i == snake.length - 1 {
-			part_sprite = assets.tail_sprite
+			part_sprite = tail
 			dir = snake.body[i - 1] - snake.body[i]
 		} else {
 			dir = snake.body[i - 1] - snake.body[i]
@@ -58,7 +64,7 @@ draw_snake :: proc(snake: Snake, assets: Assets) {
 	}
 }
 
-draw_score :: proc(snake: ^Snake) {
+draw_score :: proc(snake: ^Snake, location_base_x: i32, color: rl.Color) {
 	snake.score.current = snake.length - 3
 	score_str := fmt.ctprintf("Score: %v", snake.score.current)
 
@@ -67,8 +73,7 @@ draw_score :: proc(snake: ^Snake) {
 	}
 	high_score_str := fmt.ctprintf("High score: %v", snake.score.high)
 
-	rl.DrawText(score_str, 5, CANVAS_SIZE - 14, 10, rl.GRAY)
-	rl.DrawText(high_score_str, 55, CANVAS_SIZE - 14, 10, rl.GRAY)
-
+	rl.DrawText(score_str, 5 + location_base_x, CANVAS_SIZE - 14, 10, color)
+	rl.DrawText(high_score_str, 55 + location_base_x, CANVAS_SIZE - 14, 10, color)
 
 }
