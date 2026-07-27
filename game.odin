@@ -9,12 +9,12 @@ run_single_player :: proc() {
 	restart_snake(&snake_blue, start_head_pos(0), {0, 1})
 
 	assets := Single_Assets {
-		food1_sprite = rl.LoadTexture("food.png"),
-		head1_sprite = rl.LoadTexture("snake_blue_head.png"),
-		tail1_sprite = rl.LoadTexture("snake_blue_tail.png"),
-		body1_sprite = rl.LoadTexture("snake_blue_body.png"),
-		crash        = rl.LoadSound("crash.wav"),
-		eat          = rl.LoadSound("eat.wav"),
+		food1_sprite = rl.LoadTexture("textures/food.png"),
+		head1_sprite = rl.LoadTexture("textures/snake_blue_head.png"),
+		tail1_sprite = rl.LoadTexture("textures/snake_blue_tail.png"),
+		body1_sprite = rl.LoadTexture("textures/snake_blue_body.png"),
+		crash        = rl.LoadSound("sounds/crash.wav"),
+		eat          = rl.LoadSound("sounds/eat.wav"),
 	}
 
 	defer cleanup_1(assets)
@@ -77,18 +77,18 @@ run_double_player :: proc() {
 	restart_snake(&snake_pink, start_head_pos(2), {0, -1})
 
 	assets := Double_Assets {
-		food1_sprite = rl.LoadTexture("coin.png"),
-		head1_sprite = rl.LoadTexture("snake_blue_head.png"),
-		tail1_sprite = rl.LoadTexture("snake_blue_tail.png"),
-		body1_sprite = rl.LoadTexture("snake_blue_body.png"),
-		food2_sprite = rl.LoadTexture("food.png"),
-		head2_sprite = rl.LoadTexture("snake_pink_head.png"),
-		tail2_sprite = rl.LoadTexture("snake_pink_tail.png"),
-		body2_sprite = rl.LoadTexture("snake_pink_body.png"),
-		crash        = rl.LoadSound("crash.wav"),
-		eat          = rl.LoadSound("eat.wav"),
-		grow         = rl.LoadSound("grow.wav"),
-		shrink       = rl.LoadSound("shrink.wav"),
+		food1_sprite = rl.LoadTexture("textures/coin.png"),
+		head1_sprite = rl.LoadTexture("textures/snake_blue_head.png"),
+		tail1_sprite = rl.LoadTexture("textures/snake_blue_tail.png"),
+		body1_sprite = rl.LoadTexture("textures/snake_blue_body.png"),
+		food2_sprite = rl.LoadTexture("textures/food.png"),
+		head2_sprite = rl.LoadTexture("textures/snake_pink_head.png"),
+		tail2_sprite = rl.LoadTexture("textures/snake_pink_tail.png"),
+		body2_sprite = rl.LoadTexture("textures/snake_pink_body.png"),
+		crash        = rl.LoadSound("sounds/crash.wav"),
+		eat          = rl.LoadSound("sounds/eat.wav"),
+		grow         = rl.LoadSound("sounds/grow.wav"),
+		shrink       = rl.LoadSound("sounds/shrink.wav"),
 	}
 
 	defer cleanup_2(assets)

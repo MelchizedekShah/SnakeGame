@@ -94,7 +94,9 @@ snake_movement :: proc(snake: ^Snake, sound_eat: rl.Sound, sound_crash: rl.Sound
 	}; if snake.game_over {
 
 		if rl.IsKeyPressed(.ENTER) {
-			restart_snake(snake, {0, 1}, 0)
+			// restart_snake(snake, {0, 1}, 0)
+			restart_snake(snake, start_head_pos(0), {0, 1})
+
 		}
 
 	} else {
