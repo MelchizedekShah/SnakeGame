@@ -6,7 +6,7 @@ run_single_player :: proc() {
 	snake_blue: Snake
 	snake_blue.direction.tick_timer = TICK_RATE
 
-	restart_snake(&snake_blue, start_head_pos(0), {0, 1})
+	restart_snake(&snake_blue, {0, 1})
 
 	assets := Single_Assets {
 		food1_sprite = rl.LoadTexture("textures/food.png"),
@@ -73,8 +73,8 @@ run_double_player :: proc() {
 	snake_blue.direction.tick_timer = TICK_RATE
 	snake_pink.direction.tick_timer = TICK_RATE
 
-	restart_snake(&snake_blue, start_head_pos(-2), {0, 1})
-	restart_snake(&snake_pink, start_head_pos(2), {0, -1})
+	restart_snake(&snake_blue, {0, 1}, DEFAULT_MANIPULATOR_NEG)
+	restart_snake(&snake_pink, {0, 1}, DEFAULT_MANIPULATOR_POS)
 
 	assets := Double_Assets {
 		food1_sprite = rl.LoadTexture("textures/coin.png"),
@@ -113,46 +113,51 @@ run_double_player :: proc() {
 		rl.BeginMode2D(camera)
 
 		// draw snake
-		// if !snake_blue.game_over && !snake_pink.game_over {
+		if !snake_blue.game_over && !snake_pink.game_over {
 
-		draw_snake(
-			snake_blue,
-			assets.head1_sprite,
-			assets.body1_sprite,
-			assets.tail1_sprite,
-			assets.food1_sprite,
-		)
-		draw_snake(
-			snake_pink,
-			assets.head2_sprite,
-			assets.body2_sprite,
-			assets.tail2_sprite,
-			assets.food2_sprite,
-		)
-		draw_score(&snake_blue, 0, rl.BLUE)
-		draw_score(&snake_pink, 190, rl.PINK)
+			draw_snake(
+				snake_blue,
+				assets.head1_sprite,
+				assets.body1_sprite,
+				assets.tail1_sprite,
+				assets.food1_sprite,
+			)
+			draw_snake(
+				snake_pink,
+				assets.head2_sprite,
+				assets.body2_sprite,
+				assets.tail2_sprite,
+				assets.food2_sprite,
+			)
+			draw_score(&snake_blue, 0, rl.BLUE)
+			draw_score(&snake_pink, 190, rl.PINK)
 
-		rl.EndMode2D()
-		rl.EndDrawing()
-		// else {
-		// rl.EndMode2D()
+			rl.EndMode2D()
+			rl.EndDrawing()
 
-		// switch {
-		// case rl.IsKeyPressed(.M):
-		// break game_loop
-		// restart_snake(&snake_blue)
-		// gm = .Menu
-		// menu_picker()
-		// case rl.IsKeyPressed(.Q):
-		// break game_loop
-		// os.exit(0)
-		//
-		// }
+		} else {
+			rl.EndMode2D()
 
-		// write_text("Game Over!", 150, "Press Enter to play again", "Press M for menu", 50)
-		// rl.EndDrawing()
+			switch {
+			case rl.IsKeyPressed(.M):
+				break game_loop
+			}
 
+			message: cstring
+
+			switch {
+			case snake_pink.game_over && snake_blue.game_over:
+				message = "DRAW!"
+			case snake_pink.game_over && !snake_blue.game_over:
+				message = "BLUE WON!"
+			case !snake_pink.game_over && snake_blue.game_over:
+				message = "PINK WON!"
+			}
+
+			write_text(message, 150, "Press Enter to play again", "Press M for menu", 50)
+			rl.EndDrawing()
+
+		}
+		free_all(context.temp_allocator)
 	}
-	free_all(context.temp_allocator)
 }
-// }
