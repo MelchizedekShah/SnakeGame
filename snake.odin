@@ -19,7 +19,7 @@ wrap_vec2i :: proc(v: Vec2i, snake_length: ^int) -> Vec2i {
 
 	if wrap_x || wrap_y {
 
-		snake_length^ -= 1
+		// snake_length^ -= 1
 	}
 
 	return Vec2i{x, y}
@@ -224,116 +224,26 @@ snakes_movement :: proc(
 		snake2.direction.tick_timer -= rl.GetFrameTime()
 	}
 
-	// if snake1.direction.tick_timer <= 0 {
-	// 	next_part_pos := snake1.body[0]
-	// 	snake1.body[0] += snake1.direction.move
-	// 	snake1.direction.change_thick = false
-	// 	head_pos := snake1.body[0]
-	//
-	// 	if head_pos.x < 0 ||
-	// 	   head_pos.y < 0 ||
-	// 	   head_pos.x >= GRID_WIDTH ||
-	// 	   head_pos.y >= GRID_WIDTH {
-	// 		// snake1.length -= 1
-	// 		rl.PlaySound(sound_shrink)
-	// 		// restart_snake(snake1, head_pos, calculate_direction(snake1^), MIN_SNAKE_LENGTH)
-	// 		// restart_snake(snake1, {GRID_WIDTH - 2, 0}, {0, 1}, MIN_SNAKE_LENGTH)
-	// 		restart_snake(snake1, {10, 2}, {0, 1}, snake1.length)
-	//
-	// 	}
-	//
-	// 	for i in 1 ..< snake1.length {
-	// 		cur_pos := snake1.body[i]
-	//
-	// 		if cur_pos == head_pos {
-	// 			snake1.game_over = true
-	// 			rl.PlaySound(sound_crash)
-	// 		}
-	//
-	// 		snake1.body[i] = next_part_pos
-	// 		next_part_pos = cur_pos
-	// 	}
-	//
-	// 	if head_pos == snake1.food {
-	// 		snake1.length += 1
-	// 		snake1.body[snake1.length - 1] = next_part_pos
-	// 		random_food(snake1)
-	// 		rl.PlaySound(sound_eat)
-	// 	}
-	//
-	// 	if head_pos == snake2.food {
-	// 		snake1.length -= 1
-	// 		random_food(snake2)
-	// 		rl.PlaySound(sound_shrink)
-	// 	}
-	//
-	// 	snake1.direction.tick_timer = TICK_RATE + snake1.direction.tick_timer
-	// }
-	//
-	// if snake2.direction.tick_timer <= 0 {
-	// 	next_part_pos := snake2.body[0]
-	// 	snake2.body[0] += snake2.direction.move
-	// 	snake2.direction.change_thick = false
-	// 	head_pos := snake2.body[0]
-	//
-	// 	if head_pos.x < 0 ||
-	// 	   head_pos.y < 0 ||
-	// 	   head_pos.x >= GRID_WIDTH ||
-	// 	   head_pos.y >= GRID_WIDTH {
-	// 		// snake2.length -= 1
-	// 		rl.PlaySound(sound_shrink)
-	// 		// restart_snake(snake2, head_pos, calculate_direction(snake2^), MIN_SNAKE_LENGTH)
-	// 		// restart_snake(snake2, {0, GRID_WIDTH - 2}, {0, -1}, MIN_SNAKE_LENGTH)
-	// 		restart_snake(snake2, {18, 2}, {0, 1}, snake2.length)
-	// 	}
-	//
-	// 	for i in 1 ..< snake2.length {
-	// 		cur_pos := snake2.body[i]
-	//
-	// 		if cur_pos == head_pos {
-	// 			snake2.game_over = true
-	// 			rl.PlaySound(sound_crash)
-	// 		}
-	//
-	// 		snake2.body[i] = next_part_pos
-	// 		next_part_pos = cur_pos
-	// 	}
-	//
-	// 	if head_pos == snake2.food {
-	// 		snake2.length += 1
-	// 		snake2.body[snake2.length - 1] = next_part_pos
-	// 		random_food(snake2)
-	// 		rl.PlaySound(sound_grow)
-	// 	}
-	//
-	// 	if head_pos == snake1.food {
-	// 		snake2.length -= 1
-	// 		random_food(snake1)
-	// 		rl.PlaySound(sound_shrink)
-	// 	}
-	//
-	// 	snake2.direction.tick_timer = TICK_RATE + snake2.direction.tick_timer
-	// }
-	//
-
 	if snake1.direction.tick_timer <= 0 {
 		next_part_pos := snake1.body[0]
 		snake1.body[0] += snake1.direction.move
 
-		// snake1.body[0].x = wrap_coord(snake1.body[0].x)
-		// snake1.body[0].y = wrap_coord(snake1.body[0].y)
 		snake1.body[0] = wrap_vec2i(snake1.body[0], &snake1.length)
 
 		snake1.direction.change_thick = false
 		head_pos := snake1.body[0]
+		head_pos_enemy := snake2.body[0]
 
 		for i in 1 ..< snake1.length {
 			cur_pos := snake1.body[i]
 
 			if cur_pos == head_pos {
-				// snake1.game_over = true
 				snake1.length -= 1
 				rl.PlaySound(sound_shrink)
+			}
+
+			if cur_pos == head_pos_enemy {
+				snake2.length -= 1
 			}
 
 			snake1.body[i] = next_part_pos
@@ -367,14 +277,17 @@ snakes_movement :: proc(
 
 		snake2.direction.change_thick = false
 		head_pos := snake2.body[0]
+		head_pos_enemy := snake1.body[0]
 
 		for i in 1 ..< snake2.length {
 			cur_pos := snake2.body[i]
 
 			if cur_pos == head_pos {
-				// snake2.game_over = true
 				snake2.length -= 1
 				rl.PlaySound(sound_shrink)
+			}
+			if cur_pos == head_pos_enemy {
+				snake1.length -= 1
 			}
 
 			snake2.body[i] = next_part_pos
@@ -392,6 +305,17 @@ snakes_movement :: proc(
 			snake2.length -= 1
 			random_food(snake1)
 			rl.PlaySound(sound_shrink)
+		}
+
+		if snake1.body[0] == snake2.body[0] {
+			if snake1.length > snake2.length {
+				snake2.length -= 1
+			} else if snake1.length < snake2.length {
+				snake1.length -= 1
+			} else {
+				snake1.length -= 1
+				snake2.length -= 1
+			}
 		}
 
 		snake2.direction.tick_timer = TICK_RATE + snake2.direction.tick_timer
