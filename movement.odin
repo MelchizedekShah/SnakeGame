@@ -42,7 +42,12 @@ restart_snake :: proc(
 }
 
 
-calculate_move :: proc(snake: Snake, assets: Assets, layout := Layout.Arrows) -> MoveResult {
+calculate_move :: proc(
+	snake: Snake,
+	assets: Assets,
+	teleportation := false,
+	layout := Layout.Arrows,
+) -> MoveResult {
 	snake := snake
 	keys: KeyStructure
 
@@ -93,7 +98,9 @@ calculate_move :: proc(snake: Snake, assets: Assets, layout := Layout.Arrows) ->
 		next_part_pos := snake.body[0]
 		snake.body[0] += snake.direction.move
 
-		snake.body[0], wrapped = teleport_snake(snake.body[0])
+		if teleportation {
+			snake.body[0], wrapped = teleport_snake(snake.body[0])
+		}
 
 		snake.direction.change_thick = false
 		head_pos := snake.body[0]

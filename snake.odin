@@ -61,11 +61,13 @@ double_snake_movement :: proc(snake_player1: ^Snake, snake_player2: ^Snake, asse
 	snake_player1.direction.tick_timer -= rl.GetFrameTime()
 	snake_player2.direction.tick_timer -= rl.GetFrameTime()
 
-	result_player_1 := calculate_move(snake_player1^, assets, .Arrows)
-	result_player_2 := calculate_move(snake_player2^, assets, .Letters)
+	result_player_1 := calculate_move(snake_player1^, assets, true, .Arrows)
+	result_player_2 := calculate_move(snake_player2^, assets, true, .Letters)
 
 	head_pos_player_1 := result_player_1.snake.body[0]
 	head_pos_player_2 := result_player_2.snake.body[0]
+	player_1_length := result_player_1.snake.length
+	player_2_length := result_player_2.snake.length
 
 
 	// Teleportation
@@ -80,49 +82,57 @@ double_snake_movement :: proc(snake_player1: ^Snake, snake_player2: ^Snake, asse
 
 
 	// Self Collision and enemy damage
+	hit_player_1 := false
+	hit_player_2 := false
+
 	for i in 1 ..< result_player_1.snake.length {
 		cur_pos := result_player_1.snake.body[i]
+
 		if cur_pos == head_pos_player_1 {
-			result_player_1.snake.length -= 1
-			rl.PlaySound(assets.crash)
-			break
+			hit_player_1 = true
 		}
 
 		if cur_pos == head_pos_player_2 {
-			result_player_2.snake.length -= 1
-			rl.PlaySound(assets.crash)
-			break
+			hit_player_2 = true
 		}
 	}
 
 	for i in 1 ..< result_player_2.snake.length {
 		cur_pos := result_player_2.snake.body[i]
+
 		if cur_pos == head_pos_player_2 {
-			result_player_2.snake.length -= 1
-			rl.PlaySound(assets.crash)
-			break
+			hit_player_2 = true
 		}
+
 		if cur_pos == head_pos_player_1 {
-			result_player_1.snake.length -= 1
-			rl.PlaySound(assets.crash)
-			break
+			hit_player_1 = true
 		}
+	}
+
+	if hit_player_1 {
+		result_player_1.snake.length -= 1
+		rl.PlaySound(assets.crash)
+	}
+
+	if hit_player_2 {
+		result_player_2.snake.length -= 1
+		rl.PlaySound(assets.crash)
 	}
 
 	// Head to head collision
 	if head_pos_player_1 == head_pos_player_2 {
 		switch {
-		case result_player_1.snake.length > result_player_2.snake.length:
+		case player_1_length > player_2_length:
 			result_player_2.snake.length -= 1
 
-		case result_player_1.snake.length < result_player_2.snake.length:
+		case player_1_length < player_2_length:
 			result_player_1.snake.length -= 1
 
-		case result_player_1.snake.length == result_player_2.snake.length:
+		case player_1_length == player_2_length:
 			result_player_1.snake.length -= 1
 			result_player_2.snake.length -= 1
-
 		}
+
 		rl.PlaySound(assets.crash)
 	}
 

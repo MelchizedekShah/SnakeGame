@@ -30,7 +30,7 @@ run_single_player :: proc(assets: Assets) {
 				assets.tail1_sprite,
 				assets.food1_sprite,
 			)
-			draw_score(&snake_blue, 0, rl.GRAY)
+			draw_score(&snake_blue, true, 0, rl.GRAY)
 
 			rl.EndMode2D()
 			rl.EndDrawing()
@@ -91,8 +91,8 @@ run_double_player :: proc(assets: Assets) {
 				assets.food2_sprite,
 			)
 
-			draw_score(&snake_blue, 0, rl.BLUE)
-			draw_score(&snake_pink, 190, rl.PINK)
+			draw_score(&snake_blue, false, 0, rl.BLUE)
+			draw_score(&snake_pink, false, 250, rl.PINK)
 
 			rl.EndMode2D()
 			rl.EndDrawing()

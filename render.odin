@@ -64,16 +64,16 @@ draw_snake :: proc(
 	}
 }
 
-draw_score :: proc(snake: ^Snake, location_base_x: i32, color: rl.Color) {
+draw_score :: proc(snake: ^Snake, draw_high_score: bool, location_base_x: i32, color: rl.Color) {
 	snake.score.current = snake.length - 3
 	score_str := fmt.ctprintf("Score: %v", snake.score.current)
-
-	if snake.score.current > snake.score.high {
-		snake.score.high = snake.score.current
-	}
-	high_score_str := fmt.ctprintf("High score: %v", snake.score.high)
-
 	rl.DrawText(score_str, 5 + location_base_x, CANVAS_SIZE - 14, 10, color)
-	rl.DrawText(high_score_str, 55 + location_base_x, CANVAS_SIZE - 14, 10, color)
 
+	if draw_high_score {
+		if snake.score.current > snake.score.high {
+			snake.score.high = snake.score.current
+		}
+		high_score_str := fmt.ctprintf("High score: %v", snake.score.high)
+		rl.DrawText(high_score_str, 55 + location_base_x, CANVAS_SIZE - 14, 10, color)
+	}
 }
