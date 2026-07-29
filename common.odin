@@ -35,18 +35,11 @@ Direction :: struct {
 	tick_timer:   f32,
 }
 
-Single_Assets :: struct {
+Assets :: struct {
 	food1_sprite: rl.Texture,
 	head1_sprite: rl.Texture,
 	tail1_sprite: rl.Texture,
 	body1_sprite: rl.Texture,
-	// Sound
-	crash:        rl.Sound,
-	eat:          rl.Sound,
-}
-
-Double_Assets :: struct {
-	using single: Single_Assets,
 	head2_sprite: rl.Texture,
 	body2_sprite: rl.Texture,
 	tail2_sprite: rl.Texture,
@@ -54,10 +47,30 @@ Double_Assets :: struct {
 	// Sound
 	grow:         rl.Sound,
 	shrink:       rl.Sound,
+	crash:        rl.Sound,
+	eat:          rl.Sound,
 }
 
 GameModes :: enum {
 	Menu,
 	SinglePlayer,
 	DoublePlayer,
+}
+
+KeyStructure :: struct {
+	up:    bool,
+	down:  bool,
+	right: bool,
+	left:  bool,
+}
+
+Layout :: enum {
+	Arrows,
+	Letters,
+}
+
+MoveResult :: struct {
+	snake:    Snake,
+	wrapped:  bool,
+	tail_pos: Vec2i,
 }

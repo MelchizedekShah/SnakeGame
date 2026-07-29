@@ -2,26 +2,16 @@ package snake
 
 import rl "vendor:raylib"
 
-run_single_player :: proc() {
+run_single_player :: proc(assets: Assets) {
 	snake_blue: Snake
 	snake_blue.direction.tick_timer = TICK_RATE
 
 	restart_snake(&snake_blue, {0, 1})
 
-	assets := Single_Assets {
-		food1_sprite = rl.LoadTexture("textures/food.png"),
-		head1_sprite = rl.LoadTexture("textures/snake_blue_head.png"),
-		tail1_sprite = rl.LoadTexture("textures/snake_blue_tail.png"),
-		body1_sprite = rl.LoadTexture("textures/snake_blue_body.png"),
-		crash        = rl.LoadSound("sounds/crash.wav"),
-		eat          = rl.LoadSound("sounds/eat.wav"),
-	}
-
-	defer cleanup_1(assets)
 
 	game_loop: for !rl.WindowShouldClose() {
 		// Snkae movement	
-		snake_movement(&snake_blue, assets.eat, assets.crash)
+		single_snake_movement(&snake_blue, assets)
 		rl.BeginDrawing()
 		rl.ClearBackground(GAME_BACKROUND)
 
@@ -50,13 +40,6 @@ run_single_player :: proc() {
 			switch {
 			case rl.IsKeyPressed(.M):
 				break game_loop
-			// restart_snake(&snake_blue)
-			// gm = .Menu
-			// menu_picker()
-			// case rl.IsKeyPressed(.Q):
-			// break game_loop
-			// os.exit(0)
-			//
 			}
 
 			write_text("Game Over!", 150, "Press Enter to play again", "Press M for menu", 50)
@@ -67,43 +50,21 @@ run_single_player :: proc() {
 	}
 }
 
-run_double_player :: proc() {
-	snake_blue: Snake
+run_double_player :: proc(assets: Assets) {
 	snake_pink: Snake
-	snake_blue.direction.tick_timer = TICK_RATE
+	snake_blue: Snake
+
 	snake_pink.direction.tick_timer = TICK_RATE
+	snake_blue.direction.tick_timer = TICK_RATE
 
-	restart_snake(&snake_blue, {0, 1}, DEFAULT_MANIPULATOR_NEG)
 	restart_snake(&snake_pink, {0, 1}, DEFAULT_MANIPULATOR_POS)
-
-	assets := Double_Assets {
-		food1_sprite = rl.LoadTexture("textures/coin.png"),
-		head1_sprite = rl.LoadTexture("textures/snake_blue_head.png"),
-		tail1_sprite = rl.LoadTexture("textures/snake_blue_tail.png"),
-		body1_sprite = rl.LoadTexture("textures/snake_blue_body.png"),
-		food2_sprite = rl.LoadTexture("textures/food.png"),
-		head2_sprite = rl.LoadTexture("textures/snake_pink_head.png"),
-		tail2_sprite = rl.LoadTexture("textures/snake_pink_tail.png"),
-		body2_sprite = rl.LoadTexture("textures/snake_pink_body.png"),
-		crash        = rl.LoadSound("sounds/crash.wav"),
-		eat          = rl.LoadSound("sounds/eat.wav"),
-		grow         = rl.LoadSound("sounds/grow.wav"),
-		shrink       = rl.LoadSound("sounds/shrink.wav"),
-	}
-
-	defer cleanup_2(assets)
+	restart_snake(&snake_blue, {0, 1}, DEFAULT_MANIPULATOR_NEG)
 
 
 	game_loop: for !rl.WindowShouldClose() {
-		// Snkae movement	
-		snakes_movement(
-			&snake_pink,
-			&snake_blue,
-			assets.eat,
-			assets.crash,
-			assets.grow,
-			assets.shrink,
-		)
+
+		double_snake_movement(&snake_pink, &snake_blue, assets)
+
 		rl.BeginDrawing()
 		rl.ClearBackground(GAME_BACKROUND)
 
@@ -129,6 +90,7 @@ run_double_player :: proc() {
 				assets.tail2_sprite,
 				assets.food2_sprite,
 			)
+
 			draw_score(&snake_blue, 0, rl.BLUE)
 			draw_score(&snake_pink, 190, rl.PINK)
 

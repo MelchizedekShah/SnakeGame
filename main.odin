@@ -3,7 +3,7 @@ package snake
 import rl "vendor:raylib"
 
 main :: proc() {
-	init()
+	assets := init()
 
 	for !rl.WindowShouldClose() {
 		gm = .Menu
@@ -11,11 +11,12 @@ main :: proc() {
 
 		#partial switch gm {
 		case .SinglePlayer:
-			run_single_player()
+			run_single_player(assets)
 		case .DoublePlayer:
-			run_double_player()
+			run_double_player(assets)
 		}
 	}
 
+	cleanup(assets)
 	close_game()
 }

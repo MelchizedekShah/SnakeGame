@@ -2,288 +2,174 @@ package snake
 
 import rl "vendor:raylib"
 
-
-teleport_snake :: proc(
-	v: Vec2i,
-	snake_length: ^int,
-	sound: rl.Sound,
-	take_damage := true,
-) -> Vec2i {
-	wrap_coord :: proc(v: int) -> (int, bool) {
-		if v < 0 {
-			return GRID_WIDTH - 1, true
-		}
-		if v >= GRID_WIDTH {
-			return 0, true
-		}
-		return v, false
-	}
-
-	x, wrap_x := wrap_coord(v.x)
-	y, wrap_y := wrap_coord(v.y)
-
-	if wrap_x || wrap_y {
-
-		if take_damage {
-			snake_length^ -= 1
-		}
-		rl.PlaySound(sound)
-	}
-
-	return Vec2i{x, y}
-}
-
-restart_snake :: proc(
-	snake: ^Snake,
-	dirction: Vec2i,
-	location_manipulator_x := 0,
-	snake_length := MIN_SNAKE_LENGTH,
-) {
-	start_head_pos := Vec2i{(GRID_WIDTH + location_manipulator_x) / 2, GRID_WIDTH / 2}
-	snake.body[0] = start_head_pos
-	snake.body[1] = start_head_pos - {0, 1}
-	snake.body[2] = start_head_pos - {0, 2}
-	snake.length = snake_length
-	snake.game_over = false
-	random_food(snake)
-	snake.direction.move = dirction
-	snake.score.current = 0
-}
-
-snake_movement :: proc(snake: ^Snake, sound_eat: rl.Sound, sound_crash: rl.Sound) {
-	if !snake.direction.change_thick {
-		switch {
-		case rl.IsKeyPressed(.UP) && snake.direction.move != {0, 1}:
-			snake.direction.move = {0, -1}
-			snake.direction.change_thick = true
-
-		case rl.IsKeyPressed(.DOWN) && snake.direction.move != {0, -1}:
-			snake.direction.move = {0, 1}
-			snake.direction.change_thick = true
-
-		case rl.IsKeyPressed(.RIGHT) && snake.direction.move != {-1, 0}:
-			snake.direction.move = {1, 0}
-			snake.direction.change_thick = true
-
-		case rl.IsKeyPressed(.LEFT) && snake.direction.move != {1, 0}:
-			snake.direction.move = {-1, 0}
-			snake.direction.change_thick = true
-		}
-	}; if snake.game_over {
-
+single_snake_movement :: proc(snake: ^Snake, assets: Assets) {
+	if snake.game_over {
 		if rl.IsKeyPressed(.ENTER) {
-			// restart_snake(snake, {0, 1}, 0)
 			restart_snake(snake, {0, 1})
-
 		}
-
-	} else {
-		snake.direction.tick_timer -= rl.GetFrameTime()
+		return
 	}
 
-	if snake.direction.tick_timer <= 0 {
-		next_part_pos := snake.body[0]
-		snake.body[0] += snake.direction.move
-		snake.direction.change_thick = false
-		head_pos := snake.body[0]
+	snake.direction.tick_timer -= rl.GetFrameTime()
 
-		if head_pos.x < 0 ||
-		   head_pos.y < 0 ||
-		   head_pos.x >= GRID_WIDTH ||
-		   head_pos.y >= GRID_WIDTH {
-			snake.game_over = true
-			rl.PlaySound(sound_crash)
-		}
+	results := calculate_move(snake^, assets)
 
-		for i in 1 ..< snake.length {
-			cur_pos := snake.body[i]
+	head_pos := results.snake.body[0]
 
-			if cur_pos == head_pos {
-				snake.game_over = true
-				rl.PlaySound(sound_crash)
-			}
+	// Wall collision
+	if head_pos.x < 0 || head_pos.y < 0 || head_pos.x >= GRID_WIDTH || head_pos.y >= GRID_WIDTH {
 
-			snake.body[i] = next_part_pos
-			next_part_pos = cur_pos
-		}
-
-		if head_pos == snake.food {
-			snake.length += 1
-			snake.body[snake.length - 1] = next_part_pos
-			random_food(snake)
-			rl.PlaySound(sound_eat)
-		}
-
-		snake.direction.tick_timer = TICK_RATE + snake.direction.tick_timer
+		results.snake.game_over = true
+		rl.PlaySound(assets.crash)
 	}
+
+	// Self collision
+	for i in 1 ..< results.snake.length {
+		if results.snake.body[i] == head_pos {
+			results.snake.game_over = true
+			rl.PlaySound(assets.crash)
+			break
+		}
+	}
+
+	// Food
+	if head_pos == results.snake.food {
+		results.snake.length += 1
+
+		results.snake.body[results.snake.length - 1] = results.tail_pos
+
+		random_food(&results.snake)
+		rl.PlaySound(assets.eat)
+	}
+
+	// Commit 	
+	snake^ = results.snake
 
 }
 
-snakes_movement :: proc(
-	snake1: ^Snake,
-	snake2: ^Snake,
-	sound_eat: rl.Sound,
-	sound_crash: rl.Sound,
-	sound_grow: rl.Sound,
-	sound_shrink: rl.Sound,
-) {
-	if !snake1.direction.change_thick {
-		switch {
-		case rl.IsKeyPressed(.UP) && snake1.direction.move != {0, 1}:
-			snake1.direction.move = {0, -1}
-			snake1.direction.change_thick = true
 
-		case rl.IsKeyPressed(.DOWN) && snake1.direction.move != {0, -1}:
-			snake1.direction.move = {0, 1}
-			snake1.direction.change_thick = true
+double_snake_movement :: proc(snake_player1: ^Snake, snake_player2: ^Snake, assets: Assets) {
 
-		case rl.IsKeyPressed(.RIGHT) && snake1.direction.move != {-1, 0}:
-			snake1.direction.move = {1, 0}
-			snake1.direction.change_thick = true
-
-		case rl.IsKeyPressed(.LEFT) && snake1.direction.move != {1, 0}:
-			snake1.direction.move = {-1, 0}
-			snake1.direction.change_thick = true
-		}
-	}
-
-	if !snake2.direction.change_thick {
-		switch {
-		case rl.IsKeyPressed(.W) && snake2.direction.move != {0, 1}:
-			snake2.direction.move = {0, -1}
-			snake2.direction.change_thick = true
-
-		case rl.IsKeyPressed(.S) && snake2.direction.move != {0, -1}:
-			snake2.direction.move = {0, 1}
-			snake2.direction.change_thick = true
-
-		case rl.IsKeyPressed(.D) && snake2.direction.move != {-1, 0}:
-			snake2.direction.move = {1, 0}
-			snake2.direction.change_thick = true
-
-		case rl.IsKeyPressed(.A) && snake2.direction.move != {1, 0}:
-			snake2.direction.move = {-1, 0}
-			snake2.direction.change_thick = true
-		}
-	}
-
-
-	if snake1.game_over || snake2.game_over {
-
+	if snake_player1.game_over || snake_player2.game_over {
 		if rl.IsKeyPressed(.ENTER) {
-			restart_snake(snake1, {0, 1}, DEFAULT_MANIPULATOR_NEG)
-			restart_snake(snake2, {0, 1}, DEFAULT_MANIPULATOR_POS)
+			restart_snake(snake_player1, {0, 1}, DEFAULT_MANIPULATOR_POS)
+			restart_snake(snake_player2, {0, 1}, DEFAULT_MANIPULATOR_NEG)
 		}
-
-	} else {
-		snake1.direction.tick_timer -= rl.GetFrameTime()
-		snake2.direction.tick_timer -= rl.GetFrameTime()
+		return
 	}
 
-	if snake1.direction.tick_timer <= 0 {
-		next_part_pos := snake1.body[0]
-		snake1.body[0] += snake1.direction.move
+	snake_player1.direction.tick_timer -= rl.GetFrameTime()
+	snake_player2.direction.tick_timer -= rl.GetFrameTime()
 
-		snake1.body[0] = teleport_snake(snake1.body[0], &snake1.length, sound_shrink)
+	result_player_1 := calculate_move(snake_player1^, assets, .Arrows)
+	result_player_2 := calculate_move(snake_player2^, assets, .Letters)
 
-		snake1.direction.change_thick = false
-		head_pos := snake1.body[0]
-		head_pos_enemy := snake2.body[0]
+	head_pos_player_1 := result_player_1.snake.body[0]
+	head_pos_player_2 := result_player_2.snake.body[0]
 
-		for i in 1 ..< snake1.length {
-			cur_pos := snake1.body[i]
 
-			if cur_pos == head_pos {
-				snake1.length -= 1
-				rl.PlaySound(sound_shrink)
-			}
-
-			if cur_pos == head_pos_enemy {
-				snake2.length -= 1
-			}
-
-			snake1.body[i] = next_part_pos
-			next_part_pos = cur_pos
-		}
-
-		if head_pos == snake1.food {
-			snake1.length += 1
-			snake1.body[snake1.length - 1] = next_part_pos
-			random_food(snake1)
-			rl.PlaySound(sound_eat)
-		}
-
-		if head_pos == snake2.food {
-			snake1.length -= 1
-			random_food(snake2)
-			rl.PlaySound(sound_shrink)
-		}
-
-		if snake1.length < MIN_SNAKE_LENGTH {
-			snake1.game_over = true
-		}
-
-		snake1.direction.tick_timer = TICK_RATE + snake1.direction.tick_timer
+	// Teleportation
+	if result_player_1.wrapped {
+		result_player_1.snake.length -= 1
+		rl.PlaySound(assets.shrink)
+	}
+	if result_player_2.wrapped {
+		result_player_2.snake.length -= 1
+		rl.PlaySound(assets.shrink)
 	}
 
-	if snake2.direction.tick_timer <= 0 {
-		next_part_pos := snake2.body[0]
-		snake2.body[0] += snake2.direction.move
 
-		// snake2.body[0].x = wrap_coord(snake2.body[0].x)
-		// snake2.body[0].y = wrap_coord(snake2.body[0].y)
-
-		snake2.body[0] = teleport_snake(snake2.body[0], &snake2.length, sound_shrink)
-
-		snake2.direction.change_thick = false
-		head_pos := snake2.body[0]
-		head_pos_enemy := snake1.body[0]
-
-		for i in 1 ..< snake2.length {
-			cur_pos := snake2.body[i]
-
-			if cur_pos == head_pos {
-				snake2.length -= 1
-				rl.PlaySound(sound_shrink)
-			}
-			if cur_pos == head_pos_enemy {
-				snake1.length -= 1
-			}
-
-			snake2.body[i] = next_part_pos
-			next_part_pos = cur_pos
+	// Self Collision and enemy damage
+	for i in 1 ..< result_player_1.snake.length {
+		cur_pos := result_player_1.snake.body[i]
+		if cur_pos == head_pos_player_1 {
+			result_player_1.snake.length -= 1
+			rl.PlaySound(assets.crash)
+			break
 		}
 
-		if head_pos == snake2.food {
-			snake2.length += 1
-			snake2.body[snake2.length - 1] = next_part_pos
-			random_food(snake2)
-			rl.PlaySound(sound_grow)
+		if cur_pos == head_pos_player_2 {
+			result_player_2.snake.length -= 1
+			rl.PlaySound(assets.crash)
+			break
 		}
-
-		if head_pos == snake1.food {
-			snake2.length -= 1
-			random_food(snake1)
-			rl.PlaySound(sound_shrink)
-		}
-
-		if snake1.body[0] == snake2.body[0] {
-			if snake1.length > snake2.length {
-				snake2.length -= 1
-			} else if snake1.length < snake2.length {
-				snake1.length -= 1
-			} else {
-				snake1.length -= 1
-				snake2.length -= 1
-			}
-		}
-
-
-		if snake2.length < MIN_SNAKE_LENGTH {
-			snake2.game_over = true
-		}
-
-		snake2.direction.tick_timer = TICK_RATE + snake2.direction.tick_timer
 	}
+
+	for i in 1 ..< result_player_2.snake.length {
+		cur_pos := result_player_2.snake.body[i]
+		if cur_pos == head_pos_player_2 {
+			result_player_2.snake.length -= 1
+			rl.PlaySound(assets.crash)
+			break
+		}
+		if cur_pos == head_pos_player_1 {
+			result_player_1.snake.length -= 1
+			rl.PlaySound(assets.crash)
+			break
+		}
+	}
+
+	// Head to head collision
+	if head_pos_player_1 == head_pos_player_2 {
+		switch {
+		case result_player_1.snake.length > result_player_2.snake.length:
+			result_player_2.snake.length -= 1
+
+		case result_player_1.snake.length < result_player_2.snake.length:
+			result_player_1.snake.length -= 1
+
+		case result_player_1.snake.length == result_player_2.snake.length:
+			result_player_1.snake.length -= 1
+			result_player_2.snake.length -= 1
+
+		}
+		rl.PlaySound(assets.crash)
+	}
+
+	// Good Food
+	if head_pos_player_1 == result_player_1.snake.food {
+		result_player_1.snake.length += 1
+
+		result_player_1.snake.body[result_player_1.snake.length - 1] = result_player_1.tail_pos
+
+		random_food(&result_player_1.snake)
+		rl.PlaySound(assets.eat)
+	}
+
+	if head_pos_player_2 == result_player_2.snake.food {
+		result_player_2.snake.length += 1
+
+		result_player_2.snake.body[result_player_2.snake.length - 1] = result_player_2.tail_pos
+
+		random_food(&result_player_2.snake)
+		rl.PlaySound(assets.grow)
+	}
+
+	// Bad Food
+	if head_pos_player_1 == result_player_2.snake.food {
+		result_player_1.snake.length -= 1
+		random_food(&result_player_2.snake)
+		rl.PlaySound(assets.shrink)
+	}
+
+	if head_pos_player_2 == result_player_1.snake.food {
+		result_player_2.snake.length -= 1
+		random_food(&result_player_1.snake)
+		rl.PlaySound(assets.shrink)
+	}
+
+	// Game over
+	if result_player_1.snake.length < MIN_SNAKE_LENGTH {
+		result_player_1.snake.game_over = true
+		rl.PlaySound(assets.crash)
+	}
+	if result_player_2.snake.length < MIN_SNAKE_LENGTH {
+		result_player_2.snake.game_over = true
+		rl.PlaySound(assets.crash)
+	}
+
+	// Commit
+	snake_player1^ = result_player_1.snake
+	snake_player2^ = result_player_2.snake
 
 }
