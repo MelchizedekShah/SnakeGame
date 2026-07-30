@@ -73,4 +73,5 @@ MoveResult :: struct {
 	snake:    Snake,
 	wrapped:  bool,
 	tail_pos: Vec2i,
+	moved:    bool,
 }

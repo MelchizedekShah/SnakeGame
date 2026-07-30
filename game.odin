@@ -28,7 +28,7 @@ run_single_player :: proc(assets: Assets) {
 				assets.head1_sprite,
 				assets.body1_sprite,
 				assets.tail1_sprite,
-				assets.food1_sprite,
+				assets.food2_sprite,
 			)
 			draw_score(&snake_blue, true, 0, rl.GRAY)
 

@@ -94,7 +94,11 @@ calculate_move :: proc(
 		}
 	}
 
+	moved := false
+
 	if snake.direction.tick_timer <= 0 {
+		moved = true
+
 		next_part_pos := snake.body[0]
 		snake.body[0] += snake.direction.move
 
@@ -119,6 +123,7 @@ calculate_move :: proc(
 		snake    = snake,
 		wrapped  = wrapped,
 		tail_pos = tail_pos,
+		moved    = moved,
 	}
 
 	return results
