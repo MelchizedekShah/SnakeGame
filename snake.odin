@@ -76,16 +76,20 @@ double_snake_movement :: proc(
 	head_pos_player_2 := result_player_2.snake.body[0]
 
 	// Damage tracker
-	hit_player_1 := false
-	hit_player_2 := false
+	// hit_player_1 := false
+	// hit_player_2 := false
+	damage_counter_1 := 0
+	damage_counter_2 := 0
 
 	// Teleportation
 	if teleportation {
 		if result_player_1.wrapped {
-			hit_player_1 = true
+			// hit_player_1 = true
+			damage_counter_1 += 1
 		}
 		if result_player_2.wrapped {
-			hit_player_2 = true
+			// hit_player_2 = true
+			damage_counter_2 += 1
 		}
 	}
 
@@ -97,11 +101,13 @@ double_snake_movement :: proc(
 		cur_pos := result_player_1.snake.body[i]
 
 		if cur_pos == head_pos_player_1 {
-			hit_player_1 = true
+			// hit_player_1 = true
+			damage_counter_1 += 1
 		}
 
 		if cur_pos == head_pos_player_2 {
-			hit_player_2 = true
+			// hit_player_2 = true
+			damage_counter_2 += 1
 		}
 	}
 
@@ -109,11 +115,13 @@ double_snake_movement :: proc(
 		cur_pos := result_player_2.snake.body[i]
 
 		if cur_pos == head_pos_player_2 {
-			hit_player_2 = true
+			// hit_player_2 = true
+			damage_counter_2 += 2
 		}
 
 		if cur_pos == head_pos_player_1 {
-			hit_player_1 = true
+			// hit_player_1 = true
+			damage_counter_1 += 2
 		}
 	}
 
@@ -121,39 +129,45 @@ double_snake_movement :: proc(
 	if head_pos_player_1 == head_pos_player_2 {
 		switch {
 		case player_1_length > player_2_length:
-			hit_player_2 = true
+			// hit_player_2 = true
+			damage_counter_2 += 3
 
 		case player_1_length < player_2_length:
-			hit_player_1 = true
+			// hit_player_1 = true
+			damage_counter_1 += 3
 
 		case player_1_length == player_2_length:
-			hit_player_1 = true
-			hit_player_2 = true
+			// hit_player_1 = true
+			// hit_player_2 = true
+			damage_counter_1 += 3
+			damage_counter_2 += 3
 		}
 
 	}
 
 	// Bad Food
 	if head_pos_player_1 == result_player_2.snake.food {
-		hit_player_1 = true
+		// hit_player_1 = true
+		damage_counter_1 += 2
 		random_food(&result_player_2.snake)
 		rl.PlaySound(assets.shrink)
 	}
 
 	if head_pos_player_2 == result_player_1.snake.food {
-		hit_player_2 = true
+		// hit_player_2 = true
+		damage_counter_2 += 2
 		random_food(&result_player_1.snake)
 		rl.PlaySound(assets.shrink)
 	}
 
 	// Apply damage
-	if hit_player_1 {
-		result_player_1.snake.length -= 1
+	if damage_counter_1 > 0 {
+		result_player_1.snake.length -= damage_counter_1
 		rl.PlaySound(assets.shrink)
 	}
 
-	if hit_player_2 {
-		result_player_2.snake.length -= 1
+	if damage_counter_2 > 0 {
+		result_player_2.snake.length -= damage_counter_2
 		rl.PlaySound(assets.shrink)
 	}
 
